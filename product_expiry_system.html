@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Expiry Alert System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Login Page Styles */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-card h1 {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        /* Dashboard Styles */
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            border-left: 5px solid;
+        }
+
+        .stat-card.total {
+            border-left-color: #667eea;
+        }
+
+        .stat-card.expired {
+            border-left-color: #dc3545;
+        }
+
+        .stat-card.expiring {
+            border-left-color: #ffc107;
+        }
+
+        .stat-card.fresh {
+            border-left-color: #28a745;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .add-product-form {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        .add-product-form h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .product-list {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-list h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .search-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-filter input,
+        .search-filter select {
+            padding: 10px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .search-filter input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .product-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .product-table th,
+        .product-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e1e1e1;
+        }
+
+        .product-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .product-row {
+            transition: background-color 0.3s ease;
+        }
+
+        .product-row:hover {
+            background-color: #f8f9fa;
+        }
+
+        .product-row.expired {
+            background-color: #ffe6e6;
+            border-left: 5px solid #dc3545;
+        }
+
+        .product-row.expiring {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+        }
+
+        .product-row.fresh {
+            background-color: #e6f7e6;
+            border-left: 5px solid #28a745;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-expired {
+            background: #dc3545;
+            color: white;
+        }
+
+        .status-expiring {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .status-fresh {
+            background: #28a745;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state img {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+
+            .search-filter {
+                flex-direction: column;
+            }
+
+            .search-filter input {
+                min-width: 100%;
+            }
+
+            .product-table {
+                font-size: 14px;
+            }
+
+            .product-table th,
+            .product-table td {
+                padding: 8px;
+            }
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div class="login-container" id="loginPage">
+        <div class="login-card">
+            <h1>🏪 Product Expiry Alert System</h1>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+            <div class="alert alert-danger" id="loginError" style="display: none; margin-top: 15px;">
+                Invalid username or password!
+            </div>
+            <div style="margin-top: 20px; font-size: 14px; color: #666;">
+                <p><strong>Demo Credentials:</strong></p>
+                <p>Username: admin | Password: admin123</p>
+                <p>Username: user | Password: user123</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard">
+        <div class="container">
+            <!-- Header -->
+            <div class="header">
+                <div>
+                    <h1>📊 Product Expiry Dashboard</h1>
+                    <p>Welcome back, <span id="currentUser">User</span>!</p>
+                </div>
+                <div class="user-info">
+                    <span id="currentDateTime"></span>
+                    <button class="btn btn-secondary" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card total">
+                    <div class="stat-number" id="totalProducts">0</div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+                <div class="stat-card expired">
+                    <div class="stat-number" id="expiredProducts">0</div>
+                    <div class="stat-label">Expired Products</div>
+                </div>
+                <div class="stat-card expiring">
+                    <div class="stat-number" id="expiringProducts">0</div>
+                    <div class="stat-label">Expiring Soon (7 days)</div>
+                </div>
+                <div class="stat-card fresh">
+                    <div class="stat-number" id="freshProducts">0</div>
+                    <div class="stat-label">Fresh Products</div>
+                </div>
+            </div>
+
+            <!-- Alert Messages -->
+            <div id="alertContainer"></div>
+
+            <!-- Main Content -->
+            <div class="main-content">
+                <!-- Add Product Form -->
+                <div class="add-product-form">
+                    <h2>➕ Add New Product</h2>
+                    <form id="productForm">
+                        <div class="form-group">
+                            <label for="productName">Product Name:</label>
+                            <input type="text" id="productName" name="productName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productCategory">Category:</label>
+                            <select id="productCategory" name="productCategory" required>
+                                <option value="">Select Category</option>
+                                <option value="Food">Food</option>
+                                <option value="Medicine">Medicine</option>
+                                <option value="Cosmetics">Cosmetics</option>
+                                <option value="Household">Household</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="expiryDate">Expiry Date:</label>
+                            <input type="date" id="expiryDate" name="expiryDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="quantity">Quantity:</label>
+                            <input type="number" id="quantity" name="quantity" min="1" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Add Product</button>
+                    </form>
+                </div>
+
+                <!-- Product List -->
+                <div class="product-list">
+                    <h2>📋 Product Inventory</h2>
+                    
+                    <!-- Search and Filter -->
+                    <div class="search-filter">
+                        <input type="text" id="searchInput" placeholder="Search products..." onkeyup="filterProducts()">
+                        <select id="categoryFilter" onchange="filterProducts()">
+                            <option value="">All Categories</option>
+                            <option value="Food">Food</option>
+                            <option value="Medicine">Medicine</option>
+                            <option value="Cosmetics">Cosmetics</option>
+                            <option value="Household">Household</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <select id="statusFilter" onchange="filterProducts()">
+                            <option value="">All Status</option>
+                            <option value="fresh">Fresh</option>
+                            <option value="expiring">Expiring Soon</option>
+                            <option value="expired">Expired</option>
+                        </select>
+                    </div>
+
+                    <!-- Loading -->
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <p>Loading products...</p>
+                    </div>
+
+                    <!-- Product Table -->
+                    <div id="productTableContainer">
+                        <table class="product-table" id="productTable">
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Category</th>
+                                    <th>Expiry Date</th>
+                                    <th>Days Left</th>
+                                    <th>Quantity</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productTableBody">
+                                <!-- Products will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div class="empty-state" id="emptyState" style="display: none;">
+                        <h3>📦 No Products Found</h3>
+                        <p>Start by adding your first product to track expiry dates!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let products = [];
+        let filteredProducts = [];
+        let currentUser = '';
+
+        // Login credentials (in real app, this would be server-side)
+        const credentials = {
+            'admin': 'admin123',
+            'user': 'user123'
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProducts();
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            // Check if user is already logged in
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = savedUser;
+                showDashboard();
+            }
+        });
+
+        // Login functionality
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (credentials[username] && credentials[username] === password) {
+                currentUser = username;
+                localStorage.setItem('currentUser', username);
+                showDashboard();
+                showAlert('Login successful!', 'success');
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('loginError').style.display = 'none';
+                }, 3000);
+            }
+        });
+
+        // Show dashboard
+        function showDashboard() {
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            document.getElementById('currentUser').textContent = currentUser;
+            updateStats();
+            displayProducts();
+        }
+
+        // Logout functionality
+        function logout() {
+            localStorage.removeItem('currentUser');
+            currentUser = '';
+            document.getElementById('loginPage').style.display = 'flex';
+            document.getElementById('dashboard').classList.remove('active');
+            document.getElementById('loginForm').reset();
+        }
+
+        // Update date and time
+        function updateDateTime() {
+            const now = new Date();
+            const options = {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            document.getElementById('currentDateTime').textContent = now.toLocaleDateString('en-US', options);
+        }
+
+        // Product form submission
+        document.getElementById('productForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const productName = document.getElementById('productName').value;
+            const productCategory = document.getElementById('productCategory').value;
+            const expiryDate = document.getElementById('expiryDate').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+            
+            // Validate expiry date
+            const today = new Date();
+            const expiry = new Date(expiryDate);
+            
+            if (expiry < today.setHours(0, 0, 0, 0)) {
+                showAlert('Warning: You are adding an already expired product!', 'warning');
+            }
+            
+            const product = {
+                id: Date.now(),
+                name: productName,
+                category: productCategory,
+                expiryDate: expiryDate,
+                quantity: quantity,
+                dateAdded: new Date().toISOString().split('T')[0]
+            };
+            
+            products.push(product);
+            saveProducts();
+            updateStats();
+            displayProducts();
+            
+            // Reset form
+            document.getElementById('productForm').reset();
+            showAlert('Product added successfully!', 'success');
+        });
+
+        // Calculate days until expiry
+        function calculateDaysLeft(expiryDate) {
+            const today = new Date();
+            const expiry = new Date(expiryDate);
+            const timeDiff = expiry - today;
+            return Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+        }
+
+        // Get product status
+        function getProductStatus(daysLeft) {
+            if (daysLeft < 0) {
+                return 'expired';
+            } else if (daysLeft <= 7) {
+                return 'expiring';
+            } else {
+                return 'fresh';
+            }
+        }
+
+        // Display products
+        function displayProducts() {
+            const tbody = document.getElementById('productTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const tableContainer = document.getElementById('productTableContainer');
+            
+            if (filteredProducts.length === 0 && products.length === 0) {
+                emptyState.style.display = 'block';
+                tableContainer.style.display = 'none';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            tableContainer.style.display = 'block';
+            
+            const productsToShow = filteredProducts.length > 0 ? filteredProducts : products;
+            
+            tbody.innerHTML = '';
+            
+            productsToShow.forEach(product => {
+                const daysLeft = calculateDaysLeft(product.expiryDate);
+                const status = getProductStatus(daysLeft);
+                
+                const row = document.createElement('tr');
+                row.className = `product-row ${status}`;
+                
+                const statusText = status === 'expired' ? 'Expired' : 
+                                status === 'expiring' ? 'Expiring Soon' : 'Fresh';
+                
+                const daysLeftText = daysLeft < 0 ? 
+                    `${Math.abs(daysLeft)} days ago` : 
+                    daysLeft === 0 ? 'Expires today' : 
+                    `${daysLeft} days left`;
+                
+                row.innerHTML = `
+                    <td><strong>${product.name}</strong></td>
+                    <td>${product.category}</td>
+                    <td>${new Date(product.expiryDate).toLocaleDateString()}</td>
+                    <td>${daysLeftText}</td>
+                    <td>${product.quantity}</td>
+                    <td><span class="status-badge status-${status}">${statusText}</span></td>
+                    <td><button class="delete-btn" onclick="deleteProduct(${product.id})">Delete</button></td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Filter products
+        function filterProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            filteredProducts = products.filter(product => {
+                const matchesSearch = product.name.toLowerCase().includes(searchTerm) ||
+                                    product.category.toLowerCase().includes(searchTerm);
+                
+                const matchesCategory = categoryFilter === '' || product.category === categoryFilter;
+                
+                const daysLeft = calculateDaysLeft(product.expiryDate);
+                const status = getProductStatus(daysLeft);
+                const matchesStatus = statusFilter === '' || status === statusFilter;
+                
+                return matchesSearch && matchesCategory && matchesStatus;
+            });
+            
+            displayProducts();
+        }
+
+        // Delete product
+        function deleteProduct(productId) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                products = products.filter(product => product.id !== productId);
+                saveProducts();
+                updateStats();
+                displayProducts();
+                showAlert('Product deleted successfully!', 'success');
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = products.length;
+            let expired = 0;
+            let expiring = 0;
+            let fresh = 0;
+            
+            products.forEach(product => {
+                const daysLeft = calculateDaysLeft(product.expiryDate);
+                const status = getProductStatus(daysLeft);
+                
+                if (status === 'expired') expired++;
+                else if (status === 'expiring') expiring++;
+                else fresh++;
+            });
+            
+            document.getElementById('totalProducts').textContent = total;
+            document.getElementById('expiredProducts').textContent = expired;
+            document.getElementById('expiringProducts').textContent = expiring;
+            document.getElementById('freshProducts').textContent = fresh;
+            
+            // Show alerts for expired and expiring products
+            if (expired > 0) {
+                showAlert(`⚠️ You have ${expired} expired product(s) that need immediate attention!`, 'danger');
+            }
+            if (expiring > 0) {
+                showAlert(`⏰ You have ${expiring} product(s) expiring within 7 days!`, 'warning');
+            }
+        }
+
+        // Show alert
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            
+            alertContainer.appendChild(alert);
+            
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }
+
+        // Save products to localStorage
+        function saveProducts() {
+            localStorage.setItem('products', JSON.stringify(products));
+        }
+
+        // Load products from localStorage
+        function loadProducts() {
+            const savedProducts = localStorage.getItem('products');
+            if (savedProducts) {
+                products = JSON.parse(savedProducts);
+            }
+        }
+
+        // Set minimum date for expiry date input to today
+        document.getElementById('expiryDate').min = new Date().toISOString().split('T')[0];
+    </script>
+</body>
+</html>
